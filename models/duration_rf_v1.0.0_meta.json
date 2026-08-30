@@ -1,0 +1,40 @@
+{
+  "model_name": "duration_rf",
+  "model_version": "1.0.0",
+  "feature_version": "1.0",
+  "feature_names": [
+    "asset_condition_score",
+    "asset_criticality_index",
+    "asset_age_years",
+    "days_since_last_maintenance",
+    "days_until_due",
+    "task_type_code",
+    "department_code",
+    "priority_score",
+    "estimated_duration_mins",
+    "duration_range_mins",
+    "is_emergency",
+    "overdue_flag",
+    "dependency_count",
+    "resource_count",
+    "train_density_24h",
+    "freight_density_code",
+    "best_opportunity_duration_mins",
+    "scenario_type_code",
+    "crew_available_count",
+    "machine_available_count"
+  ],
+  "training_seed": 42,
+  "record_count": 371,
+  "created_at": "2026-08-30T18:06:18.960512Z",
+  "metrics": {
+    "cv_mae_mean": 10.26,
+    "test_mae_mins": 10.82,
+    "test_rmse_mins": 14.29,
+    "test_r2": 0.9474,
+    "baseline_median_mae_mins": 51.71,
+    "improvement_over_baseline_mins": 40.89,
+    "note": "SYNTHETIC_PROTOTYPE only \u2014 does not represent real IR performance"
+  },
+  "prediction_basis": "SYNTHETIC_PROTOTYPE"
+}

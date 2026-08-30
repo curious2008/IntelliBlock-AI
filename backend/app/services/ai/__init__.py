@@ -1,0 +1,4 @@
+# AI Service Package
+__version__ = "1.0.0"
+FEATURE_VERSION = "1.0"
+PREDICTION_BASIS = "SYNTHETIC_PROTOTYPE"

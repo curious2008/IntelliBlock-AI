@@ -1,0 +1,40 @@
+{
+  "model_name": "overrun_gbc",
+  "model_version": "1.0.0",
+  "feature_version": "1.0",
+  "feature_names": [
+    "asset_condition_score",
+    "asset_criticality_index",
+    "asset_age_years",
+    "days_since_last_maintenance",
+    "days_until_due",
+    "task_type_code",
+    "department_code",
+    "priority_score",
+    "estimated_duration_mins",
+    "duration_range_mins",
+    "is_emergency",
+    "overdue_flag",
+    "dependency_count",
+    "resource_count",
+    "train_density_24h",
+    "freight_density_code",
+    "best_opportunity_duration_mins",
+    "scenario_type_code",
+    "crew_available_count",
+    "machine_available_count"
+  ],
+  "training_seed": 42,
+  "record_count": 371,
+  "created_at": "2026-08-30T18:06:19.167991Z",
+  "metrics": {
+    "test_precision": 0.6154,
+    "test_recall": 0.3636,
+    "test_f1": 0.4571,
+    "test_roc_auc": 0.6381,
+    "baseline_f1": 0.55,
+    "improvement_f1_over_baseline": -0.0929,
+    "note": "SYNTHETIC_PROTOTYPE only \u2014 does not represent real IR performance"
+  },
+  "prediction_basis": "SYNTHETIC_PROTOTYPE"
+}

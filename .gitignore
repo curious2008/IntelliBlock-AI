@@ -1,0 +1,46 @@
+# Environment & Secrets
+.env
+.env.*
+*.env
+**/.env
+**/.env.*
+backend/.env
+frontend/.env
+!.env.example
+!**/.env.example
+
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+*/.venv/
+venv/
+*/venv/
+ENV/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+*.sqlite
+*.sqlite3
+*.db
+
+# Node.js & Frontend
+node_modules/
+*/node_modules/
+dist/
+*/dist/
+dist-ssr/
+*.local
+.vite/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Test/Temporary databases
+test_*.db
+backend/*.db
