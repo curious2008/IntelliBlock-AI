@@ -1,6 +1,7 @@
 import React from 'react';
-import { Activity, Radio, AlertCircle } from 'lucide-react';
+import { Activity, Radio, AlertCircle, Layers } from 'lucide-react';
 import { HealthStatus } from '../../types';
+import { useScenario } from '../../context/ScenarioContext';
 
 interface HeaderProps {
   title: string;
@@ -15,6 +16,8 @@ export const Header: React.FC<HeaderProps> = ({
   healthLoading,
   healthError,
 }) => {
+  const { activeScenario, generating } = useScenario();
+
   return (
     <header style={{
       height: '64px',
@@ -35,8 +38,28 @@ export const Header: React.FC<HeaderProps> = ({
         </p>
       </div>
 
-      {/* Connection & System Status Indicator */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+      {/* Connection & Active Scenario Status Indicators */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        {activeScenario && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            padding: '0.35rem 0.75rem',
+            borderRadius: '6px',
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            backgroundColor: 'var(--bg-dark)',
+            border: '1px solid var(--border-color)',
+            color: 'var(--accent-primary)',
+          }}>
+            <Layers size={13} />
+            <span>
+              {generating ? 'Synthesizing Scenario...' : `${activeScenario.scenario_name} (Seed: ${activeScenario.seed})`}
+            </span>
+          </div>
+        )}
+
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -70,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({
             </>
           ) : healthLoading ? (
             <>
-              <Activity size={14} style={{ animation: 'spin 1.5s linear infinite' }} />
+              <Activity size={14} className="animate-spin" />
               <span>Checking API...</span>
             </>
           ) : (

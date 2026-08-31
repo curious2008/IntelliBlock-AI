@@ -21,6 +21,7 @@
   padding: 0;
 }
 
+/* Base Body & Global Cursor Rules */
 body {
   background-color: var(--bg-dark);
   color: var(--text-main);
@@ -28,18 +29,91 @@ body {
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   overflow-x: hidden;
+  cursor: default;
 }
 
-button {
-  cursor: pointer;
-  border: none;
-  background: none;
-  font-family: inherit;
+div, span, p, h1, h2, h3, h4, h5, h6, table, tr, th, td, section, main, aside, header, footer {
+  cursor: default;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* Interactive Elements */
+button,
+[role="button"],
+a,
+select,
+input[type="checkbox"],
+input[type="radio"],
+label,
+.clickable {
+  cursor: pointer !important;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+.disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+/* Text Entry Fields */
+input[type="text"],
+input[type="number"],
+input[type="search"],
+input[type="password"],
+input[type="email"],
+textarea {
+  cursor: text !important;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+}
+
+code,
+pre,
+.selectable-text {
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Prevent Accidental Highlight on Cards & Headers */
+.no-select,
+.metric-card,
+.nav-item,
+.badge,
+.tab-btn {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 /* Custom Scrollbar */

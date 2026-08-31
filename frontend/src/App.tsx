@@ -12,8 +12,9 @@ import { WhatIfPage } from './pages/WhatIfPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { apiClient } from './services/api/client';
 import { HealthStatus } from './types';
+import { ScenarioProvider } from './context/ScenarioContext';
 
-export const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageId>('dashboard');
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [healthLoading, setHealthLoading] = useState<boolean>(true);
@@ -80,6 +81,14 @@ export const App: React.FC = () => {
     >
       {renderPageContent()}
     </MainLayout>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <ScenarioProvider>
+      <AppContent />
+    </ScenarioProvider>
   );
 };
 

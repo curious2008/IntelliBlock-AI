@@ -1,59 +1,33 @@
-import React, { useEffect, useState } from 'react';
-import { Play, RotateCcw, AlertTriangle, Layers, Activity, Check } from 'lucide-react';
-import { apiClient } from '../../services/api/client';
-import { ScenarioInfo, ScenarioSummary } from '../../types';
+import React, { useState } from 'react';
+import { Play, RotateCcw, AlertTriangle, Layers, Activity, Check, CheckCircle2, Clock, Hash } from 'lucide-react';
+import { useScenario } from '../../context/ScenarioContext';
 
-interface ScenarioSelectorProps {
-  onScenarioGenerated?: () => void;
-}
+export const ScenarioSelector: React.FC = () => {
+  const {
+    activeScenario,
+    scenariosList,
+    generating,
+    generationStages,
+    lastGeneratedAt,
+    error,
+    generateScenario,
+    clearError,
+  } = useScenario();
 
-export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onScenarioGenerated }) => {
-  const [scenarios, setScenarios] = useState<ScenarioInfo[]>([]);
-  const [activeSummary, setActiveSummary] = useState<ScenarioSummary | null>(null);
-  const [selectedType, setSelectedType] = useState<string>('NORMAL');
-  const [seed, setSeed] = useState<number>(42);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [generating, setGenerating] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadScenarios() {
-      try {
-        setLoading(true);
-        const [scList, sumData] = await Promise.all([
-          apiClient.getScenarios(),
-          apiClient.getScenarioSummary(),
-        ]);
-        setScenarios(scList);
-        setActiveSummary(sumData);
-        setSelectedType(sumData.scenario_type);
-        setSeed(sumData.seed);
-      } catch (err: any) {
-        setError(err.message || 'Failed to load scenarios metadata');
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadScenarios();
-  }, []);
+  const [selectedType, setSelectedType] = useState<string>(activeScenario?.scenario_type || 'NORMAL');
+  const [seed, setSeed] = useState<number>(activeScenario?.seed || 42);
+  const [successBanner, setSuccessBanner] = useState<string | null>(null);
 
   const handleGenerate = async () => {
     try {
-      setGenerating(true);
-      setError(null);
-      setSuccessMsg(null);
-      const newSummary = await apiClient.generateScenario({
-        scenario_type: selectedType,
-        seed: Number(seed),
-      });
-      setActiveSummary(newSummary);
-      setSuccessMsg(`Generated ${newSummary.scenario_name} (Seed: ${newSummary.seed}) successfully!`);
-      if (onScenarioGenerated) onScenarioGenerated();
-    } catch (err: any) {
-      setError(err.message || 'Failed to generate scenario');
-    } finally {
-      setGenerating(false);
+      clearError();
+      setSuccessBanner(null);
+      const summary = await generateScenario(selectedType, seed);
+      setSuccessBanner(
+        `Generated scenario "${summary.scenario_name}" with Seed ${summary.seed} (Run ID: ${summary.run_id}). All downstream modules synchronized.`
+      );
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -77,13 +51,22 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onScenarioGe
             </h2>
           </div>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-            Reproducible scenario generator for SIH26027 multi-department block planning evaluation
+            State-driven deterministic environment generator for SIH26027 multi-department block planning
           </p>
         </div>
 
         {/* Seed Input & Generate Action */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: 'var(--bg-dark)', border: '1px solid var(--border-color)', padding: '0.35rem 0.75rem', borderRadius: '6px' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.4rem',
+            backgroundColor: 'var(--bg-dark)',
+            border: '1px solid var(--border-color)',
+            padding: '0.35rem 0.75rem',
+            borderRadius: '6px'
+          }}>
+            <Hash size={14} style={{ color: 'var(--text-muted)' }} />
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>Seed:</span>
             <input
               type="number"
@@ -99,6 +82,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onScenarioGe
                 fontWeight: 600,
                 outline: 'none',
               }}
+              title="Change seed to generate unique deterministic scenario variants"
             />
           </div>
 
@@ -119,27 +103,83 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onScenarioGe
               boxShadow: '0 0 12px rgba(56, 189, 248, 0.3)',
             }}
           >
-            {generating ? <RotateCcw size={16} style={{ animation: 'spin 1.5s linear infinite' }} /> : <Play size={16} />}
-            <span>{generating ? 'Generating Data...' : 'Generate Scenario'}</span>
+            {generating ? (
+              <RotateCcw size={16} className="animate-spin" />
+            ) : (
+              <Play size={16} />
+            )}
+            <span>{generating ? 'Generating Scenario...' : 'Generate Scenario'}</span>
           </button>
         </div>
       </div>
 
+      {/* Generation Stage Progress Indicator */}
+      {generating && (
+        <div style={{
+          backgroundColor: 'var(--bg-dark)',
+          border: '1px solid rgba(56, 189, 248, 0.3)',
+          borderRadius: '8px',
+          padding: '1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem',
+        }}>
+          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '0.25rem' }}>
+            Scenario Synthesis in Progress (Deterministic Seed: {seed}):
+          </div>
+          {generationStages.map((stage) => (
+            <div key={stage.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem' }}>
+              {stage.status === 'completed' && <CheckCircle2 size={14} style={{ color: 'var(--accent-success)' }} />}
+              {stage.status === 'running' && <RotateCcw size={14} className="animate-spin" style={{ color: 'var(--accent-primary)' }} />}
+              {stage.status === 'pending' && <Clock size={14} style={{ color: 'var(--text-muted)' }} />}
+              {stage.status === 'failed' && <AlertTriangle size={14} style={{ color: 'var(--accent-danger)' }} />}
+              <span style={{
+                color: stage.status === 'running' ? 'var(--accent-primary)' : stage.status === 'completed' ? '#f8fafc' : 'var(--text-muted)',
+                fontWeight: stage.status === 'running' ? 600 : 400,
+              }}>
+                {stage.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Notifications */}
       {error && (
-        <div style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: 'var(--accent-danger)', borderRadius: '6px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{
+          padding: '0.75rem 1rem',
+          backgroundColor: 'rgba(239, 68, 68, 0.15)',
+          border: '1px solid rgba(239, 68, 68, 0.3)',
+          color: 'var(--accent-danger)',
+          borderRadius: '6px',
+          fontSize: '0.8rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+        }}>
           <AlertTriangle size={16} /> {error}
         </div>
       )}
-      {successMsg && (
-        <div style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(34, 197, 94, 0.15)', border: '1px solid rgba(34, 197, 94, 0.3)', color: 'var(--accent-success)', borderRadius: '6px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Check size={16} /> {successMsg}
+
+      {successBanner && (
+        <div style={{
+          padding: '0.75rem 1rem',
+          backgroundColor: 'rgba(34, 197, 94, 0.15)',
+          border: '1px solid rgba(34, 197, 94, 0.3)',
+          color: 'var(--accent-success)',
+          borderRadius: '6px',
+          fontSize: '0.8rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+        }}>
+          <Check size={16} /> {successBanner}
         </div>
       )}
 
       {/* 8 Benchmark Scenario Selection Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '0.75rem' }}>
-        {scenarios.map((sc) => {
+        {scenariosList.map((sc) => {
           const isSelected = selectedType === sc.scenario_type;
           return (
             <div
@@ -172,7 +212,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onScenarioGe
       </div>
 
       {/* Active Scenario Summary Card */}
-      {activeSummary && (
+      {activeScenario && (
         <div style={{
           backgroundColor: 'var(--bg-dark)',
           border: '1px solid var(--border-color)',
@@ -182,72 +222,79 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({ onScenarioGe
           flexDirection: 'column',
           gap: '0.85rem',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Activity size={16} style={{ color: 'var(--accent-success)' }} />
               <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc' }}>
-                Active Environment: {activeSummary.scenario_name} (Seed: {activeSummary.seed})
+                Active Environment: {activeScenario.scenario_name} (Deterministic Seed: {activeScenario.seed})
               </span>
             </div>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-              ID: {activeSummary.run_id}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              {lastGeneratedAt && (
+                <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)' }}>
+                  Updated: {lastGeneratedAt.toLocaleTimeString()}
+                </span>
+              )}
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                Run ID: {activeScenario.run_id}
+              </span>
+            </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem', textAlign: 'center' }}>
             <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
               <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Corridors / Sections</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f8fafc' }}>
-                {activeSummary.corridor_count} / {activeSummary.track_section_count}
+                {activeScenario.corridor_count} / {activeScenario.track_section_count}
               </div>
             </div>
 
             <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
               <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Track Assets</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
-                {activeSummary.asset_count}
+                {activeScenario.asset_count}
               </div>
             </div>
 
             <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
               <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Work Orders (Tasks)</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-warning)' }}>
-                {activeSummary.maintenance_task_count}
+                {activeScenario.maintenance_task_count}
               </div>
             </div>
 
             <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
               <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Monitored Trains</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-success)' }}>
-                {activeSummary.train_movement_count}
+                {activeScenario.train_movement_count}
               </div>
             </div>
 
             <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
               <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Freight Forecasts</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#c084fc' }}>
-                {activeSummary.freight_forecast_count}
+                {activeScenario.freight_forecast_count}
               </div>
             </div>
 
             <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
               <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Candidate Opportunities</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
-                {activeSummary.block_opportunity_count}
+                {activeScenario.block_opportunity_count}
               </div>
             </div>
 
             <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
               <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Overdue / Emergency</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-danger)' }}>
-                {activeSummary.overdue_task_count} / {activeSummary.emergency_task_count}
+                {activeScenario.overdue_task_count} / {activeScenario.emergency_task_count}
               </div>
             </div>
 
             <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
               <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Co-location Clusters</div>
               <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-warning)' }}>
-                {activeSummary.overlapping_request_count}
+                {activeScenario.overlapping_request_count}
               </div>
             </div>
           </div>

@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { GitFork, Play, AlertTriangle, ShieldCheck, ArrowRight, Zap, RefreshCw, Clock, CheckCircle2, ChevronRight } from 'lucide-react';
+import { GitFork, Play, AlertTriangle, ShieldCheck, ArrowRight, Zap, RefreshCw, Clock, CheckCircle2, ChevronRight, Check } from 'lucide-react';
 import { apiClient } from '../services/api/client';
 import { WhatIfSimulationResultResponse, DisruptionEventInput } from '../types';
+import { useScenario } from '../context/ScenarioContext';
 
 export const WhatIfPage: React.FC = () => {
+  const { activeScenario, activePlan, applyReplanToActiveState } = useScenario();
+
   const [disruptionType, setDisruptionType] = useState<string>('TRAIN_DELAY');
   const [targetId, setTargetId] = useState<string>('12001');
   const [magnitudeMinutes, setMagnitudeMinutes] = useState<number>(45);
@@ -11,24 +14,40 @@ export const WhatIfPage: React.FC = () => {
   const [simulationResult, setSimulationResult] = useState<WhatIfSimulationResultResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [applied, setApplied] = useState<boolean>(false);
+  const [appliedMsg, setAppliedMsg] = useState<string | null>(null);
 
   const handleSimulate = async () => {
     try {
       setLoading(true);
       setError(null);
       setApplied(false);
+      setAppliedMsg(null);
+
       const disruption: DisruptionEventInput = {
         disruption_type: disruptionType,
         target_id: targetId,
         magnitude_minutes: Number(magnitudeMinutes),
       };
-      const res = await apiClient.simulateWhatIf({ disruption, scenario_type: 'NORMAL' });
+
+      const res = await apiClient.simulateWhatIf({
+        disruption,
+        scenario_type: activeScenario?.scenario_type || 'NORMAL',
+      });
       setSimulationResult(res);
     } catch (err: any) {
-      setError(err.message || 'Failed to execute what-if simulation');
+      setError(err.message || 'Failed to execute what-if disturbance simulation');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleApplyReplan = () => {
+    if (!simulationResult) return;
+    applyReplanToActiveState(simulationResult.replan_diff);
+    setApplied(true);
+    setAppliedMsg(
+      `Replan successfully applied to Active Master Plan! ${simulationResult.replan_diff.shifted_tasks.length} task schedule windows updated across Dashboard and Plans center.`
+    );
   };
 
   return (
@@ -180,6 +199,23 @@ export const WhatIfPage: React.FC = () => {
         </div>
       )}
 
+      {appliedMsg && (
+        <div style={{
+          backgroundColor: 'rgba(34, 197, 94, 0.15)',
+          border: '1px solid rgba(34, 197, 94, 0.3)',
+          borderRadius: '8px',
+          padding: '1rem',
+          color: 'var(--accent-success)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          fontSize: '0.85rem',
+        }}>
+          <Check size={18} />
+          <span>{appliedMsg}</span>
+        </div>
+      )}
+
       {/* Simulation Side-by-Side Comparison */}
       {simulationResult && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -262,7 +298,7 @@ export const WhatIfPage: React.FC = () => {
             borderRadius: '10px',
             padding: '1.25rem',
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
               <div>
                 <h4 style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc' }}>
                   Dynamic Replan Schedule Adjustments ({simulationResult.replan_diff.shifted_tasks.length} shifts)
@@ -272,7 +308,7 @@ export const WhatIfPage: React.FC = () => {
                 </p>
               </div>
               <button
-                onClick={() => setApplied(true)}
+                onClick={handleApplyReplan}
                 disabled={applied}
                 style={{
                   display: 'flex',
