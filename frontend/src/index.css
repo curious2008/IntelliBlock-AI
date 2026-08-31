@@ -1,42 +1,135 @@
+/* ==========================================================================
+   IntelliBlock AI — Modern Railway Operations Design System
+   Default: Light Professional Operations Theme
+   Supported: Light, System, Dark (with complete token parity)
+   ========================================================================== */
+
 :root {
-  --bg-dark: #0f172a;
-  --bg-card: #1e293b;
-  --bg-card-hover: #334155;
-  --bg-sidebar: #0b1329;
-  --border-color: #334155;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --accent-primary: #38bdf8;
-  --accent-primary-hover: #0284c7;
-  --accent-success: #22c55e;
-  --accent-warning: #f59e0b;
-  --accent-danger: #ef4444;
-  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  /* Surface & Canvas Colors (Light Default) */
+  --bg-app: #f8fafc;
+  --bg-sidebar: #ffffff;
+  --bg-header: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-subtle: #f1f5f9;
+  --bg-dark: #f1f5f9;
+  --bg-input: #ffffff;
+  --border-color: #e2e8f0;
+  --border-subtle: #edf2f7;
+  --border-focus: #0284c7;
+
+  /* Typography Colors */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-main: #0f172a;
+
+  /* Operational Accent Colors */
+  --accent-primary: #0284c7;
+  --accent-primary-hover: #0369a1;
+  --accent-primary-subtle: rgba(2, 132, 199, 0.08);
+  
+  --accent-success: #16a34a;
+  --accent-success-hover: #15803d;
+  --accent-success-subtle: rgba(22, 163, 74, 0.1);
+  
+  --accent-warning: #d97706;
+  --accent-warning-hover: #b45309;
+  --accent-warning-subtle: rgba(217, 119, 6, 0.1);
+  
+  --accent-danger: #dc2626;
+  --accent-danger-hover: #b91c1c;
+  --accent-danger-subtle: rgba(220, 38, 38, 0.1);
+  
+  --accent-ai: #7c3aed;
+  --accent-ai-hover: #6d28d9;
+  --accent-ai-subtle: rgba(124, 58, 237, 0.08);
+
+  /* Shadows & Elevation */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-drawer: -10px 0 30px -5px rgba(0, 0, 0, 0.12);
+
+  /* Typography Fonts */
+  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
+/* Dark Mode Overrides */
+[data-theme="dark"],
+.dark {
+  /* Surface & Canvas Colors (Dark Mode) */
+  --bg-app: #0b0f19;
+  --bg-sidebar: #0f172a;
+  --bg-header: #0f172a;
+  --bg-card: #131c31;
+  --bg-card-hover: #1e293b;
+  --bg-subtle: #1e293b;
+  --bg-dark: #0b0f19;
+  --bg-input: #0b0f19;
+  --border-color: rgba(255, 255, 255, 0.09);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-focus: #38bdf8;
+
+  /* Typography Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-main: #f8fafc;
+
+  /* Operational Accent Colors */
+  --accent-primary: #38bdf8;
+  --accent-primary-hover: #0284c7;
+  --accent-primary-subtle: rgba(56, 189, 248, 0.12);
+  
+  --accent-success: #22c55e;
+  --accent-success-hover: #16a34a;
+  --accent-success-subtle: rgba(34, 197, 94, 0.12);
+  
+  --accent-warning: #f59e0b;
+  --accent-warning-hover: #d97706;
+  --accent-warning-subtle: rgba(245, 158, 11, 0.12);
+  
+  --accent-danger: #ef4444;
+  --accent-danger-hover: #dc2626;
+  --accent-danger-subtle: rgba(239, 68, 68, 0.12);
+  
+  --accent-ai: #a855f7;
+  --accent-ai-hover: #9333ea;
+  --accent-ai-subtle: rgba(168, 85, 247, 0.12);
+
+  /* Shadows & Elevation */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+  --shadow-drawer: -10px 0 35px -5px rgba(0, 0, 0, 0.6);
+}
+
+/* Global Reset & Base Typography */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* Base Body & Global Cursor Rules */
 body {
-  background-color: var(--bg-dark);
-  color: var(--text-main);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   overflow-x: hidden;
   cursor: default;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-div, span, p, h1, h2, h3, h4, h5, h6, table, tr, th, td, section, main, aside, header, footer {
+/* Global Cursor & Selection Rules to Prevent Accidental Text Carets */
+div, span, p, h1, h2, h3, h4, h5, h6, table, tr, th, td, section, main, aside, header, footer, svg, ul, li {
   cursor: default;
 }
 
-/* Interactive Elements */
 button,
 [role="button"],
 a,
@@ -56,10 +149,9 @@ select:disabled,
 .disabled,
 [aria-disabled="true"] {
   cursor: not-allowed !important;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
-/* Text Entry Fields */
 input[type="text"],
 input[type="number"],
 input[type="search"],
@@ -77,53 +169,17 @@ pre,
   cursor: text;
   user-select: text;
   -webkit-user-select: text;
+  font-family: var(--font-mono);
 }
 
-/* Prevent Accidental Highlight on Cards & Headers */
-.no-select,
-.metric-card,
-.nav-item,
-.badge,
-.tab-btn {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* Animations */
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Custom Scrollbar */
+/* Custom Clean Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-dark);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -133,4 +189,41 @@ pre,
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
+}
+
+/* Animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-slide-in {
+  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
 }

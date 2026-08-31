@@ -23,7 +23,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   children,
 }) => {
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', backgroundColor: 'var(--bg-app)' }}>
       <Sidebar currentPage={currentPage} onSelectPage={onSelectPage} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <Header
@@ -32,8 +32,10 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
           healthLoading={healthLoading}
           healthError={healthError}
         />
-        <main style={{ flex: 1, padding: '1.75rem', overflowY: 'auto', backgroundColor: 'var(--bg-dark)' }}>
-          {children}
+        <main style={{ flex: 1, padding: '1.5rem 2rem', overflowY: 'auto', backgroundColor: 'var(--bg-app)' }}>
+          <div style={{ maxWidth: '1600px', margin: '0 auto', width: '100%' }}>
+            {children}
+          </div>
         </main>
       </div>
     </div>

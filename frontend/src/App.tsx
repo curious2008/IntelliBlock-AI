@@ -14,6 +14,7 @@ import { AnalyticsPage } from './pages/AnalyticsPage';
 import { apiClient } from './services/api/client';
 import { HealthStatus } from './types';
 import { ScenarioProvider } from './context/ScenarioContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 const AppContent: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageId>('dashboard');
@@ -43,14 +44,14 @@ const AppContent: React.FC = () => {
 
   const getPageTitle = (page: PageId): string => {
     switch (page) {
-      case 'dashboard': return 'Executive Overview Dashboard';
-      case 'planning': return 'Adaptive Planning Horizon (Monthly → Weekly → Daily)';
+      case 'dashboard': return 'Operations Command Center';
+      case 'planning': return 'Adaptive Planning Horizon';
       case 'maintenance': return 'Multi-Department Maintenance Demands';
-      case 'trains': return 'Train Movement Timetables & Freight';
+      case 'trains': return 'Train Movement Timetables & Headways';
       case 'corridors': return 'Railway Corridors & Track Sections';
       case 'opportunities': return 'Discovered Block Opportunities';
-      case 'resources': return 'Resource & Heavy Machinery Management';
-      case 'plans': return 'Integrated Block Optimization Plans';
+      case 'resources': return 'Resource & Heavy Machinery Fleet';
+      case 'plans': return 'Master Block Optimization Plans';
       case 'whatif': return 'Live Emergency & Decision Support Studio';
       case 'analytics': return 'Analytics & Baseline Evaluation';
       default: return 'IntelliBlock AI';
@@ -59,7 +60,7 @@ const AppContent: React.FC = () => {
 
   const renderPageContent = () => {
     switch (currentPage) {
-      case 'dashboard': return <DashboardPage />;
+      case 'dashboard': return <DashboardPage onNavigateToPage={setCurrentPage} />;
       case 'planning': return <PlanningHorizonPage onNavigateToLiveEmergency={() => setCurrentPage('whatif')} />;
       case 'maintenance': return <MaintenancePage />;
       case 'trains': return <TrainsPage />;
@@ -69,7 +70,7 @@ const AppContent: React.FC = () => {
       case 'plans': return <PlansPage />;
       case 'whatif': return <WhatIfPage />;
       case 'analytics': return <AnalyticsPage />;
-      default: return <DashboardPage />;
+      default: return <DashboardPage onNavigateToPage={setCurrentPage} />;
     }
   };
 
@@ -89,9 +90,11 @@ const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <ScenarioProvider>
-      <AppContent />
-    </ScenarioProvider>
+    <ThemeProvider>
+      <ScenarioProvider>
+        <AppContent />
+      </ScenarioProvider>
+    </ThemeProvider>
   );
 };
 
