@@ -50,7 +50,7 @@
 
 ## 3. Automated Test Suite & Production Build Metrics
 
-- **Backend Pytest Suite:** **66 / 66 Tests Passing (100%)**
+- **Backend Pytest Suite:** **68 / 68 Tests Passing (100%)**
   - `tests/test_ai.py` (19 tests)
   - `tests/test_api.py` (6 tests)
   - `tests/test_bundling.py` (3 tests)
@@ -58,12 +58,13 @@
   - `tests/test_evaluation.py` (3 tests)
   - `tests/test_explainability.py` (2 tests)
   - `tests/test_generator.py` (11 tests)
-  - `tests/test_integrations.py` (6 tests)
+  - `tests/test_integrations.py` (8 tests)
   - `tests/test_optimizer.py` (3 tests)
   - `tests/test_replanning.py` (4 tests)
-- **Frontend Production Build:** **Clean Compilation (0 TypeScript errors, 2.30s build time)**
-- **External Integration Hub:** 4/4 Adapters Connected (COA, TMS, FOIS, n8n)
-- **Supabase Cloud PostgreSQL Database:** Operational & Seeded with 35 Work Orders, 7 Track Sections, 64 Railway Assets, and 35 Train Movements.
+- **Frontend Production Build:** **Clean Compilation (0 TypeScript errors, 4.31s build time)**
+- **External Integration Hub:** 4/4 Adapters Connected (COA, TMS, FOIS, live n8n cloud)
+- **Supabase Cloud PostgreSQL Database:** Operational & Seeded with 35 Work Orders, 7 Track Sections, 64 Railway Assets, and 50 Train Movements.
+
 
 ---
 

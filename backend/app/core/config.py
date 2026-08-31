@@ -16,12 +16,17 @@ class Settings(BaseSettings):
     # Database URL
     DATABASE_URL: str = "sqlite:///./intelliblock.db"
     
+    # n8n Production Webhook URLs
+    N8N_WF01_BLOCK_APPROVED_URL: str = "https://thanusha.app.n8n.cloud/webhook/wf01-block-approved"
+    N8N_WF02_DISRUPTION_EVENT_URL: str = "https://thanusha.app.n8n.cloud/webhook/wf02-disruption-event"
+
     # CORS Origins Configuration
     CORS_ORIGINS: Union[str, List[str]] = [
         "http://localhost:5173",
         "http://localhost:3000",
         "http://127.0.0.1:5173",
     ]
+
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
