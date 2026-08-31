@@ -6,6 +6,7 @@ import {
 
 export type PageId =
   | 'dashboard'
+  | 'planning'
   | 'maintenance'
   | 'trains'
   | 'corridors'
@@ -23,13 +24,14 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onSelectPage }) => {
   const menuItems: { id: PageId; label: string; icon: React.ReactNode }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
+    { id: 'planning', label: 'Adaptive Planning', icon: <Calendar size={18} /> },
     { id: 'maintenance', label: 'Maintenance Demands', icon: <Wrench size={18} /> },
     { id: 'trains', label: 'Train Movements', icon: <Train size={18} /> },
     { id: 'corridors', label: 'Corridors & Sections', icon: <MapPin size={18} /> },
-    { id: 'opportunities', label: 'Block Opportunities', icon: <Calendar size={18} /> },
+    { id: 'opportunities', label: 'Block Opportunities', icon: <Layers size={18} /> },
     { id: 'resources', label: 'Resource Management', icon: <Users size={18} /> },
-    { id: 'plans', label: 'Block Plans', icon: <Layers size={18} /> },
-    { id: 'whatif', label: 'What-If Simulation', icon: <GitFork size={18} /> },
+    { id: 'plans', label: 'Block Plans', icon: <ShieldAlert size={18} /> },
+    { id: 'whatif', label: 'Risk & Decision Support', icon: <GitFork size={18} /> },
     { id: 'analytics', label: 'Analytics & Baseline', icon: <BarChart3 size={18} /> },
   ];
 

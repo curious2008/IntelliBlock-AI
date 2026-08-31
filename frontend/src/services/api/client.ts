@@ -203,12 +203,22 @@ export const apiClient = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
+
+  // Adaptive Planning Horizon
+  getMonthlyPlanning: (monthKey?: string, scenarioType: string = 'NORMAL') =>
+    request<import('../../types').PlanningHorizonMonthlyResponse>(
+      `/optimizer/planning-horizon/monthly?scenario_type=${encodeURIComponent(scenarioType)}${monthKey ? `&month_key=${encodeURIComponent(monthKey)}` : ''}`
+    ),
+
+  getWeeklyPlanning: (weekNumber: number = 1, monthKey?: string, scenarioType: string = 'NORMAL') =>
+    request<import('../../types').PlanningHorizonWeeklyResponse>(
+      `/optimizer/planning-horizon/weekly?week_number=${weekNumber}&scenario_type=${encodeURIComponent(scenarioType)}${monthKey ? `&month_key=${encodeURIComponent(monthKey)}` : ''}`
+    ),
+
+  // Risk -> Decision Support Studio
+  getDecisionSupport: (payload: import('../../types').DecisionSupportRequest) =>
+    request<import('../../types').DecisionSupportResponse>('/replanning/decision-support', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
 };
-
-
-
-
-
-
-
-

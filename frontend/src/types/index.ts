@@ -631,10 +631,131 @@ export interface ApiErrorResponse {
   };
 }
 
+// Planning Horizon & Decision Support Interfaces
+export interface DepartmentWorkloadItem {
+  department: string;
+  task_count: number;
+  total_duration_hours: number;
+  urgent_tasks_count: number;
+  overdue_tasks_count: number;
+  workload_percentage: number;
+}
 
+export interface MajorProgramItem {
+  program_id: string;
+  program_name: string;
+  department: string;
+  track_section_id: string;
+  estimated_block_hours: number;
+  priority_level: string;
+  planned_week: number;
+  description: string;
+}
 
+export interface WeekBreakdownItem {
+  week_number: number;
+  week_label: string;
+  start_date: string;
+  end_date: string;
+  task_count: number;
+  planned_possession_hours: number;
+  available_capacity_hours: number;
+  capacity_utilization_pct: number;
+  urgent_tasks_count: number;
+  risk_level: string;
+  status: string;
+}
 
+export interface DayBreakdownItem {
+  day_number: number;
+  day_name: string;
+  date_str: string;
+  task_count: number;
+  scheduled_blocks_count: number;
+  available_opportunities_count: number;
+  total_possession_hours: number;
+  train_traffic_density: string;
+  has_emergency_task: boolean;
+  status: string;
+}
 
+export interface PlanningHorizonMonthlyResponse {
+  month_key: string;
+  month_name: string;
+  scenario_type: string;
+  seed: number;
+  generated_at: string;
+  total_maintenance_tasks: number;
+  urgent_tasks_count: number;
+  overdue_tasks_count: number;
+  total_possession_hours_demand: number;
+  available_block_capacity_hours: number;
+  capacity_utilization_pct: number;
+  reserve_contingency_hours: number;
+  department_workloads: DepartmentWorkloadItem[];
+  major_programs: MajorProgramItem[];
+  overloaded_sections: string[];
+  weeks: WeekBreakdownItem[];
+  summary: string;
+}
 
+export interface PlanningHorizonWeeklyResponse {
+  week_number: number;
+  week_label: string;
+  month_key: string;
+  scenario_type: string;
+  total_tasks_count: number;
+  planned_possessions_count: number;
+  available_opportunities_count: number;
+  total_possession_hours: number;
+  resource_fleet_available_count: number;
+  traffic_density_index: string;
+  carried_over_tasks_count: number;
+  high_priority_work_count: number;
+  days: DayBreakdownItem[];
+  summary: string;
+}
 
+export interface DecisionAlternative {
+  option_id: string;
+  title: string;
+  strategy_type: string;
+  description: string;
+  is_recommended: boolean;
+  is_feasible: boolean;
+  hard_violations_count: number;
+  soft_violations_count: number;
+  passenger_train_delay_mins: number;
+  tasks_preserved_count: number;
+  tasks_preserved_percentage: number;
+  resource_conflicts_count: number;
+  feasibility_report: FeasibilityReportResponse;
+  replan_diff?: ReplanDiffResponse | null;
+  rank_score: number;
+  rejection_reason?: string | null;
+}
 
+export interface DecisionSupportRequest {
+  disruption: DisruptionEventInput;
+  scenario_type?: string;
+}
+
+export interface DecisionSupportResponse {
+  analysis_id: string;
+  generated_at: string;
+  scenario_type: string;
+  disruption: DisruptionEventInput;
+  is_dangerous_situation: boolean;
+  risk_level: string;
+  risk_drivers: string[];
+  cascade_unmitigated_delay_mins: number;
+  conflicted_blocks_count: number;
+  is_safe_option_available: boolean;
+  recommended_option_id: string | null;
+  recommended_action_title: string;
+  executive_recommendation_summary: string;
+  why_recommended_rationale: string[];
+  alternatives: DecisionAlternative[];
+  controller_advisory_note: string;
+  human_approval_required: boolean;
+}

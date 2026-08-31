@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MainLayout } from './components/layout/MainLayout';
 import { PageId } from './components/layout/Sidebar';
 import { DashboardPage } from './pages/DashboardPage';
+import { PlanningHorizonPage } from './pages/PlanningHorizonPage';
 import { MaintenancePage } from './pages/MaintenancePage';
 import { TrainsPage } from './pages/TrainsPage';
 import { CorridorsPage } from './pages/CorridorsPage';
@@ -43,13 +44,14 @@ const AppContent: React.FC = () => {
   const getPageTitle = (page: PageId): string => {
     switch (page) {
       case 'dashboard': return 'Executive Overview Dashboard';
+      case 'planning': return 'Adaptive Planning Horizon (Monthly → Weekly → Daily)';
       case 'maintenance': return 'Multi-Department Maintenance Demands';
       case 'trains': return 'Train Movement Timetables & Freight';
       case 'corridors': return 'Railway Corridors & Track Sections';
       case 'opportunities': return 'Discovered Block Opportunities';
       case 'resources': return 'Resource & Heavy Machinery Management';
       case 'plans': return 'Integrated Block Optimization Plans';
-      case 'whatif': return 'What-If Disruption Simulator';
+      case 'whatif': return 'Live Emergency & Decision Support Studio';
       case 'analytics': return 'Analytics & Baseline Evaluation';
       default: return 'IntelliBlock AI';
     }
@@ -58,6 +60,7 @@ const AppContent: React.FC = () => {
   const renderPageContent = () => {
     switch (currentPage) {
       case 'dashboard': return <DashboardPage />;
+      case 'planning': return <PlanningHorizonPage onNavigateToLiveEmergency={() => setCurrentPage('whatif')} />;
       case 'maintenance': return <MaintenancePage />;
       case 'trains': return <TrainsPage />;
       case 'corridors': return <CorridorsPage />;
