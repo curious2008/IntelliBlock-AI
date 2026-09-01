@@ -5,7 +5,14 @@ import {
   ScenarioInfo, ScenarioSummary, ScenarioGenerateRequest, ApiErrorResponse
 } from '../../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+const resolveApiUrl = () => {
+  const url = import.meta.env.VITE_API_BASE_URL;
+  if (url) return url;
+  if (import.meta.env.DEV) return 'http://localhost:8000/api/v1';
+  throw new Error('FATAL: VITE_API_BASE_URL environment variable is missing. Production build requires this variable to be set.');
+};
+
+const API_BASE_URL = resolveApiUrl();
 
 export class ApiError extends Error {
   code: string;

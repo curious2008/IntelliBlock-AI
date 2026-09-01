@@ -236,103 +236,44 @@ export const PlansPage: React.FC = () => {
         </div>
       )}
 
-      {/* KPI Comparison Scorecard Strip */}
+      {/* KPI Inline Strip */}
       {activePlan && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-          <div style={{ backgroundColor: 'var(--bg-card)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-              Overall Quality Score
-            </div>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent-primary)' }}>
-              {activePlan.kpi_scorecard.overall_score.toFixed(1)} <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>/ 100</span>
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--accent-success)', fontWeight: 600 }}>
-              +12.4% vs Manual Siloed Baseline
-            </div>
-          </div>
-
-          <div style={{ backgroundColor: 'var(--bg-card)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-              Urgent Task Clearance
-            </div>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent-success)' }}>
-              {activePlan.kpi_scorecard.urgent_tasks_scheduled_percentage}%
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--accent-success)' }}>
-              100% Critical Safety Protection
-            </div>
-          </div>
-
-          <div style={{ backgroundColor: 'var(--bg-card)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-              Punctuality Delay Impact
-            </div>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-              28 <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>mins</span>
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--accent-success)' }}>
-              -68% Passenger Delays
-            </div>
-          </div>
-
-          <div style={{ backgroundColor: 'var(--bg-card)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-              Hard Safety Violations
-            </div>
-            <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent-success)' }}>
-              0
-            </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--accent-success)' }}>
-              CR-001..CR-008 Certified
-            </div>
-          </div>
+        <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.85rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0', flexWrap: 'wrap', boxShadow: 'var(--shadow-xs)' }}>
+          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', marginRight: '1rem' }}>MIP Plan Scorecard</span>
+          {[
+            { label: 'Quality Score', value: `${activePlan.kpi_scorecard.overall_score.toFixed(1)}/100`, color: 'var(--accent-primary)', sub: '+12.4% vs baseline' },
+            { label: 'Urgent Clearance', value: `${activePlan.kpi_scorecard.urgent_tasks_scheduled_percentage}%`, color: 'var(--accent-success)', sub: '100% critical tasks' },
+            { label: 'Delay Impact', value: '28m', color: 'var(--text-primary)', sub: '-68% passenger delays' },
+            { label: 'Hard Violations', value: '0', color: 'var(--accent-success)', sub: 'CR-001..008 certified' },
+            { label: 'Possession Hours', value: `${activePlan.kpi_scorecard.total_block_hours_utilized.toFixed(1)}h`, color: 'var(--accent-primary)', sub: 'track time utilized' },
+          ].map((kpi, i) => (
+            <React.Fragment key={kpi.label}>
+              {i > 0 && <span style={{ width: '1px', height: '30px', background: 'var(--border-color)', margin: '0 0.9rem' }} />}
+              <div>
+                <div style={{ fontSize: '1rem', fontWeight: 800, color: kpi.color, lineHeight: 1.2 }}>{kpi.value}</div>
+                <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '1px' }}>{kpi.label}</div>
+                <div style={{ fontSize: '0.6rem', color: 'var(--accent-success)', fontWeight: 600 }}>{kpi.sub}</div>
+              </div>
+            </React.Fragment>
+          ))}
         </div>
       )}
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '0.4rem', backgroundColor: 'var(--bg-card)', padding: '0.35rem', borderRadius: '8px', border: '1px solid var(--border-color)', width: 'fit-content' }}>
-        <button
-          onClick={() => setActiveTab('SCHEDULE')}
-          style={{
-            padding: '0.45rem 1rem',
-            borderRadius: '6px',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            backgroundColor: activeTab === 'SCHEDULE' ? 'var(--accent-primary)' : 'transparent',
-            color: activeTab === 'SCHEDULE' ? '#ffffff' : 'var(--text-muted)',
-            border: 'none',
-          }}
-        >
-          1. Scheduled Possessions ({activePlan?.blocks.length || 0})
-        </button>
-        <button
-          onClick={() => setActiveTab('BUNDLES')}
-          style={{
-            padding: '0.45rem 1rem',
-            borderRadius: '6px',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            backgroundColor: activeTab === 'BUNDLES' ? 'var(--accent-primary)' : 'transparent',
-            color: activeTab === 'BUNDLES' ? '#ffffff' : 'var(--text-muted)',
-            border: 'none',
-          }}
-        >
-          2. Multi-Department Bundles
-        </button>
-        <button
-          onClick={() => setActiveTab('EXPLAIN')}
-          style={{
-            padding: '0.45rem 1rem',
-            borderRadius: '6px',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            backgroundColor: activeTab === 'EXPLAIN' ? 'var(--accent-primary)' : 'transparent',
-            color: activeTab === 'EXPLAIN' ? '#ffffff' : 'var(--text-muted)',
-            border: 'none',
-          }}
-        >
-          3. Decision Rationale Tree
-        </button>
+      <div style={{ display: 'flex', gap: '0.25rem', backgroundColor: 'var(--bg-subtle)', padding: '0.2rem', borderRadius: '6px', width: 'fit-content', border: '1px solid var(--border-color)' }}>
+        {[
+          { key: 'SCHEDULE' as const, label: `Scheduled Possessions (${activePlan?.blocks.length || 0})` },
+          { key: 'BUNDLES' as const, label: 'Multi-Dept Bundles' },
+          { key: 'EXPLAIN' as const, label: 'Decision Rationale' },
+        ].map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
+            padding: '0.4rem 0.85rem', borderRadius: '5px', border: 'none', fontSize: '0.78rem', fontWeight: 600,
+            backgroundColor: activeTab === tab.key ? 'var(--bg-card)' : 'transparent',
+            color: activeTab === tab.key ? 'var(--accent-primary)' : 'var(--text-muted)',
+            boxShadow: activeTab === tab.key ? 'var(--shadow-xs)' : 'none',
+            transition: 'all 0.15s ease',
+          }}>{tab.label}</button>
+        ))}
       </div>
 
       {/* Tab 1: Scheduled Possessions Table */}

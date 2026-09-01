@@ -1,234 +1,211 @@
 import React, { useState } from 'react';
-import { Train, Clock, MapPin, Filter, Search, ArrowRight, ShieldCheck, Activity } from 'lucide-react';
+import { Search, ArrowRight, Train } from 'lucide-react';
 import { useScenario } from '../context/ScenarioContext';
 import { TrainMovement } from '../types';
 import { TrainDetailDrawer } from '../components/drawers/TrainDetailDrawer';
 
-export const TrainsPage: React.FC = () => {
-  const { trains } = useScenario();
-
-  const [selectedTrain, setSelectedTrain] = useState<TrainMovement | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
-  const [directionFilter, setDirectionFilter] = useState<string>('ALL');
-  const [searchTerm, setSearchTerm] = useState<string>('');
-
-  const handleOpenTrain = (train: TrainMovement) => {
-    setSelectedTrain(train);
-    setIsDrawerOpen(true);
+// Mini 24h timeline
+const MiniTimeline: React.FC<{ trains: TrainMovement[] }> = ({ trains }) => {
+  const toPercent = (iso: string) => {
+    const d = new Date(iso);
+    const mins = d.getHours() * 60 + d.getMinutes();
+    return Math.min(100, Math.max(0, (mins / 1440) * 100));
   };
 
-  const filteredTrains = trains.filter((t) => {
-    const matchesDir = directionFilter === 'ALL' || t.direction === directionFilter;
-    const matchesSearch =
-      (t.train_number && t.train_number.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      t.train_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.train_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (t.train_name && t.train_name.toLowerCase().includes(searchTerm.toLowerCase()));
-    return matchesDir && matchesSearch;
+  const grouped: Record<string, TrainMovement[]> = {};
+  trains.forEach(t => {
+    const dir = t.direction || 'UP';
+    if (!grouped[dir]) grouped[dir] = [];
+    grouped[dir].push(t);
   });
 
-  const highPriorityCount = trains.filter((t) => t.priority_category === 1 || t.train_type.includes('RAJDHANI')).length;
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Metric Summary Strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-        <div style={{ backgroundColor: 'var(--bg-card)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-            Active Scheduled Movements
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            {trains.length} <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>Trains</span>
-          </div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--accent-primary)', fontWeight: 600 }}>
-            {highPriorityCount} Premium Rajdhani / Express
-          </div>
-        </div>
-
-        <div style={{ backgroundColor: 'var(--bg-card)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-            Corridor Headway Safety
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--accent-success)' }}>
-            ≥ 15 mins
-          </div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--accent-success)' }}>
-            100% Conflict-Free Separation
-          </div>
-        </div>
-
-        <div style={{ backgroundColor: 'var(--bg-card)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-            UP Direction Trains
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            {trains.filter((t) => t.direction === 'UP').length}
-          </div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-            Delhi → Kanpur Direction
-          </div>
-        </div>
-
-        <div style={{ backgroundColor: 'var(--bg-card)', padding: '1.25rem', borderRadius: '10px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-            DOWN Direction Trains
-          </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            {trains.filter((t) => t.direction === 'DOWN').length}
-          </div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-            Kanpur → Delhi Direction
-          </div>
-        </div>
+    <div style={{ padding: '0.85rem 1.25rem', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', boxShadow: 'var(--shadow-xs)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.75rem' }}>
+        <Train size={14} color="var(--accent-primary)" />
+        <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+          24-Hour Corridor Traffic Distribution ({trains.length} movements)
+        </span>
+      </div>
+      {/* Time labels */}
+      <div style={{ display: 'flex', position: 'relative', marginLeft: '40px', marginBottom: '4px' }}>
+        {[0, 6, 12, 18, 24].map(h => (
+          <span key={h} style={{
+            position: 'absolute', left: `${(h / 24) * 100}%`,
+            fontSize: '0.6rem', color: 'var(--text-faint)',
+            transform: 'translateX(-50%)',
+          }}>{String(h).padStart(2, '0')}:00</span>
+        ))}
+        <div style={{ height: '14px' }} />
       </div>
 
-      {/* Filter and Search Bar */}
-      <div style={{
-        backgroundColor: 'var(--bg-card)',
-        border: '1px solid var(--border-color)',
-        borderRadius: '10px',
-        padding: '1rem 1.25rem',
-        boxShadow: 'var(--shadow-sm)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '1rem',
-      }}>
-        <div style={{ display: 'flex', gap: '0.4rem', backgroundColor: 'var(--bg-subtle)', padding: '0.25rem', borderRadius: '6px' }}>
-          {['ALL', 'UP', 'DOWN'].map((dir) => (
-            <button
-              key={dir}
-              onClick={() => setDirectionFilter(dir)}
-              style={{
-                padding: '0.35rem 0.85rem',
-                borderRadius: '4px',
-                fontSize: '0.8rem',
-                fontWeight: directionFilter === dir ? 700 : 500,
-                backgroundColor: directionFilter === dir ? 'var(--accent-primary)' : 'transparent',
-                color: directionFilter === dir ? '#ffffff' : 'var(--text-muted)',
-                border: 'none',
-              }}
-            >
-              {dir === 'ALL' ? 'All Directions' : `${dir} Line`}
-            </button>
-          ))}
-        </div>
-
-        <div style={{ position: 'relative', minWidth: '260px' }}>
-          <Search size={15} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-          <input
-            type="text"
-            placeholder="Search train by name, number, or corridor..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '0.45rem 0.75rem 0.45rem 2rem',
-              borderRadius: '6px',
-              border: '1px solid var(--border-color)',
-              backgroundColor: 'var(--bg-input)',
-              color: 'var(--text-primary)',
-              fontSize: '0.82rem',
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Train Schedule Table */}
-      <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '10px', overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
-          <thead>
-            <tr style={{ backgroundColor: 'var(--bg-sidebar)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              <th style={{ padding: '0.85rem 1.25rem' }}>Train ID / Number</th>
-              <th style={{ padding: '0.85rem 1rem' }}>Type</th>
-              <th style={{ padding: '0.85rem 1rem' }}>Train Name</th>
-              <th style={{ padding: '0.85rem 1rem' }}>Direction</th>
-              <th style={{ padding: '0.85rem 1rem' }}>Entry Window</th>
-              <th style={{ padding: '0.85rem 1rem' }}>Exit Window</th>
-              <th style={{ padding: '0.85rem 1.25rem', textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTrains.map((train) => {
-              const isHighPriority = train.priority_category === 1 || train.train_type.includes('RAJDHANI') || train.train_type.includes('EXPRESS');
+      {Object.entries(grouped).map(([dir, dTrains]) => (
+        <div key={dir} style={{ display: 'flex', alignItems: 'center', gap: '0', height: '18px', marginBottom: '6px' }}>
+          <span style={{ width: '38px', fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-muted)', textAlign: 'right', paddingRight: '6px', flexShrink: 0 }}>{dir}</span>
+          <div style={{ flex: 1, position: 'relative', height: '4px', backgroundColor: 'var(--timeline-track)', borderRadius: '2px' }}>
+            {dTrains.map(t => {
+              const s = toPercent(t.scheduled_entry_time);
+              const e = toPercent(t.scheduled_exit_time);
+              const w = Math.max(e - s, 0.8);
               return (
-                <tr
-                  key={train.train_id}
-                  onClick={() => handleOpenTrain(train)}
-                  style={{
-                    borderBottom: '1px solid var(--border-color)',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.15s ease',
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-card-hover)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-                >
-                  <td style={{ padding: '0.85rem 1.25rem', fontFamily: 'var(--font-mono)', fontWeight: 700, color: 'var(--accent-primary)' }}>
-                    {train.train_number || train.train_id}
-                  </td>
-                  <td style={{ padding: '0.85rem 1rem' }}>
-                    <span
-                      style={{
-                        padding: '0.15rem 0.5rem',
-                        borderRadius: '4px',
-                        fontSize: '0.7rem',
-                        fontWeight: 700,
-                        backgroundColor: isHighPriority ? 'rgba(220, 38, 38, 0.1)' : 'rgba(2, 132, 199, 0.08)',
-                        color: isHighPriority ? 'var(--accent-danger)' : 'var(--accent-primary)',
-                      }}
-                    >
-                      {train.train_type}
-                    </span>
-                  </td>
-                  <td style={{ padding: '0.85rem 1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {train.train_name || 'Northern Express'}
-                  </td>
-                  <td style={{ padding: '0.85rem 1rem', color: 'var(--text-muted)' }}>
-                    {train.direction} Line
-                  </td>
-                  <td style={{ padding: '0.85rem 1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {new Date(train.scheduled_entry_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </td>
-                  <td style={{ padding: '0.85rem 1rem', color: 'var(--text-muted)' }}>
-                    {new Date(train.scheduled_exit_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </td>
-                  <td style={{ padding: '0.85rem 1.25rem', textAlign: 'right' }}>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenTrain(train);
-                      }}
-                      style={{
-                        padding: '0.35rem 0.75rem',
-                        borderRadius: '6px',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        backgroundColor: 'var(--bg-subtle)',
-                        color: 'var(--accent-primary)',
-                        border: '1px solid var(--border-color)',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.3rem',
-                      }}
-                    >
-                      <span>Inspect</span>
-                      <ArrowRight size={12} />
-                    </button>
-                  </td>
-                </tr>
+                <div key={t.train_id} style={{
+                  position: 'absolute', left: `${s}%`, width: `${w}%`, height: '4px',
+                  backgroundColor: t.priority_category === 1 ? 'var(--accent-danger)' : 'var(--accent-primary)',
+                  borderRadius: '2px', opacity: 0.75,
+                }} title={`${t.train_number || t.train_id}`} />
               );
             })}
-          </tbody>
-        </table>
+          </div>
+        </div>
+      ))}
+
+      <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+        {[
+          { label: 'High Priority (Rajdhani/Shatabdi)', color: 'var(--accent-danger)' },
+          { label: 'Regular', color: 'var(--accent-primary)' },
+        ].map(l => (
+          <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            <div style={{ width: '16px', height: '3px', backgroundColor: l.color, borderRadius: '2px' }} />
+            <span style={{ fontSize: '0.62rem', color: 'var(--text-faint)' }}>{l.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export const TrainsPage: React.FC = () => {
+  const { trains } = useScenario();
+  const [selected, setSelected]     = useState<TrainMovement | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [dir, setDir]               = useState('ALL');
+  const [search, setSearch]         = useState('');
+
+  const filtered = trains.filter(t => {
+    const matchDir    = dir === 'ALL' || t.direction === dir;
+    const matchSearch = !search
+      || (t.train_number?.toLowerCase().includes(search.toLowerCase()))
+      || t.train_type.toLowerCase().includes(search.toLowerCase())
+      || (t.train_name?.toLowerCase().includes(search.toLowerCase()));
+    return matchDir && matchSearch;
+  });
+
+  const upCount      = trains.filter(t => t.direction === 'UP').length;
+  const downCount    = trains.filter(t => t.direction === 'DOWN').length;
+  const highPriority = trains.filter(t => t.priority_category === 1).length;
+  const delayed      = trains.filter(t => t.delay_minutes > 0).length;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {/* Summary Strip */}
+      <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.85rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0', flexWrap: 'wrap', boxShadow: 'var(--shadow-xs)' }}>
+        <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', marginRight: '1rem' }}>Train Movements</span>
+        {[
+          { label: 'Total',          value: trains.length,    color: 'var(--text-primary)' },
+          { label: 'UP (DLI→CNB)',   value: upCount,          color: 'var(--accent-primary)' },
+          { label: 'DOWN (CNB→DLI)', value: downCount,        color: 'var(--accent-warning)' },
+          { label: 'High Priority',  value: highPriority,     color: 'var(--accent-danger)' },
+          { label: 'Delayed',        value: delayed,          color: delayed > 0 ? 'var(--accent-danger)' : 'var(--accent-success)' },
+          { label: 'Headway',        value: '≥ 15m Safe',     color: 'var(--accent-success)' },
+        ].map((item, i) => (
+          <React.Fragment key={item.label}>
+            {i > 0 && <span style={{ width: '1px', height: '28px', background: 'var(--border-color)', margin: '0 0.85rem' }} />}
+            <div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 800, color: item.color }}>{item.value}</div>
+              <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>{item.label}</div>
+            </div>
+          </React.Fragment>
+        ))}
       </div>
 
-      {/* Train Detail Drawer */}
-      <TrainDetailDrawer
-        train={selectedTrain}
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-      />
+      {/* Mini Timeline */}
+      <MiniTimeline trains={trains} />
+
+      {/* Filter + Search */}
+      <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.65rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', boxShadow: 'var(--shadow-xs)' }}>
+        <div style={{ display: 'flex', gap: '0.25rem', backgroundColor: 'var(--bg-subtle)', padding: '0.2rem', borderRadius: '5px' }}>
+          {['ALL', 'UP', 'DOWN'].map(d => (
+            <button key={d} onClick={() => setDir(d)} style={{
+              padding: '0.3rem 0.75rem', borderRadius: '4px', border: 'none', fontSize: '0.75rem', fontWeight: 600,
+              backgroundColor: dir === d ? 'var(--accent-primary)' : 'transparent',
+              color: dir === d ? 'var(--text-on-accent)' : 'var(--text-muted)',
+            }}>{d === 'ALL' ? 'All Directions' : `${d} Line`}</button>
+          ))}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flex: 1, minWidth: '200px', maxWidth: '300px', border: '1px solid var(--border-color)', borderRadius: '6px', padding: '0.35rem 0.65rem', backgroundColor: 'var(--bg-input)' }}>
+          <Search size={13} color="var(--text-muted)" />
+          <input type="text" placeholder="Search by number, name, type…" value={search} onChange={e => setSearch(e.target.value)}
+            style={{ border: 'none', background: 'none', color: 'var(--text-primary)', fontSize: '0.8rem', outline: 'none', width: '100%' }} />
+        </div>
+        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+          {filtered.length} of {trains.length} shown
+        </span>
+      </div>
+
+      {/* Timetable Table */}
+      <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden', boxShadow: 'var(--shadow-xs)' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="ops-table">
+            <thead>
+              <tr>
+                <th>Train No.</th>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Direction</th>
+                <th>Entry Window</th>
+                <th>Exit Window</th>
+                <th>Delay</th>
+                <th>Headway Safety</th>
+                <th style={{ textAlign: 'right' }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(train => {
+                const isHP = train.priority_category === 1 || train.train_type?.toUpperCase().includes('RAJDHANI');
+                return (
+                  <tr key={train.train_id} style={{ cursor: 'pointer' }} onClick={() => { setSelected(train); setDrawerOpen(true); }}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.8rem', color: 'var(--accent-primary)' }}>
+                      {train.train_number || train.train_id}
+                    </td>
+                    <td>
+                      <span className={`badge ${isHP ? 'badge-red' : 'badge-blue'}`}>{train.train_type}</span>
+                    </td>
+                    <td style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {train.train_name || '—'}
+                    </td>
+                    <td>
+                      <span className="badge badge-gray">{train.direction}</span>
+                    </td>
+                    <td style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
+                      {new Date(train.scheduled_entry_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>
+                      {new Date(train.scheduled_exit_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </td>
+                    <td>
+                      {train.delay_minutes > 0
+                        ? <span className="badge badge-red">+{train.delay_minutes}m</span>
+                        : <span className="badge badge-green">On Time</span>
+                      }
+                    </td>
+                    <td>
+                      <span className="badge badge-green">≥15m ✓</span>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <button className="btn btn-ghost" style={{ padding: '0.25rem 0.55rem', fontSize: '0.72rem' }}
+                        onClick={e => { e.stopPropagation(); setSelected(train); setDrawerOpen(true); }}>
+                        Inspect <ArrowRight size={11} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <TrainDetailDrawer train={selected} isOpen={drawerOpen} onClose={() => setDrawerOpen(false)} />
     </div>
   );
 };

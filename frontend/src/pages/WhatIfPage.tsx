@@ -282,166 +282,107 @@ export const WhatIfPage: React.FC = () => {
       {/* Decision Support Results */}
       {decisionResponse && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {/* Visual Disturbance Cascade Diagram */}
-          <div
-            style={{
-              backgroundColor: 'var(--bg-card)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '10px',
-              padding: '1.5rem',
-              boxShadow: 'var(--shadow-sm)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '1rem',
-            }}
-          >
-            <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+          {/* Decision Pipeline Cascade */}
+          <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '1rem 1.25rem', boxShadow: 'var(--shadow-xs)' }}>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <AlertTriangle size={14} color="var(--accent-danger)" />
               Operational Disturbance Cascade Diagnosis
             </div>
 
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              overflowX: 'auto',
-              padding: '1rem',
-              backgroundColor: 'var(--bg-subtle)',
-              borderRadius: '8px',
-              border: '1px solid var(--border-color)',
-              gap: '0.5rem',
-            }}>
-              <div style={{ textAlign: 'center', minWidth: '120px' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Initial Event</div>
-                <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-primary)' }}>{targetId}</div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--accent-danger)' }}>+{magnitudeMins}m disturbance</div>
-              </div>
-
-              <ChevronRight size={16} color="var(--text-muted)" />
-
-              <div style={{ textAlign: 'center', minWidth: '130px' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Headway Margin</div>
-                <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--accent-danger)' }}>&lt; 15 mins</div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Buffer compressed</div>
-              </div>
-
-              <ChevronRight size={16} color="var(--text-muted)" />
-
-              <div style={{ textAlign: 'center', minWidth: '140px' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Possession Conflict</div>
-                <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--text-primary)' }}>Night Shadow</div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Overlap detected</div>
-              </div>
-
-              <ChevronRight size={16} color="var(--text-muted)" />
-
-              <div style={{ textAlign: 'center', minWidth: '140px' }}>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Unmitigated Impact</div>
-                <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--accent-danger)' }}>~117 mins</div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Knock-on delay</div>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', overflowX: 'auto', gap: '0', padding: '0.5rem 0' }}>
+              {[
+                { label: 'DISRUPTION', value: targetId, sub: `+${magnitudeMins}m event`, color: 'var(--accent-danger)', bg: 'var(--accent-danger-light)' },
+                { label: 'HEADWAY IMPACT', value: '< 15m buffer', sub: 'Safety margin lost', color: 'var(--accent-warning)', bg: 'var(--accent-warning-light)' },
+                { label: 'POSSESSION CONFLICT', value: 'Night Shadow', sub: 'Window overlap', color: 'var(--accent-warning)', bg: 'var(--accent-warning-light)' },
+                { label: 'UNMITIGATED', value: '~117 mins', sub: 'Knock-on delay', color: 'var(--accent-danger)', bg: 'var(--accent-danger-light)' },
+                { label: 'DECISION ENGINE', value: `${decisionResponse.alternatives.length} options`, sub: 'CR-001..008 checked', color: 'var(--accent-primary)', bg: 'var(--accent-primary-light)' },
+              ].map((step, idx) => (
+                <React.Fragment key={step.label}>
+                  <div style={{ textAlign: 'center', minWidth: '110px', padding: '0.6rem 0.4rem', borderRadius: '6px', backgroundColor: step.bg }}>
+                    <div style={{ fontSize: '0.58rem', fontWeight: 700, color: step.color, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '2px' }}>{step.label}</div>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--text-primary)' }}>{step.value}</div>
+                    <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)' }}>{step.sub}</div>
+                  </div>
+                  {idx < 4 && <ArrowRight size={14} color="var(--text-muted)" style={{ flexShrink: 0, margin: '0 0.3rem' }} />}
+                </React.Fragment>
+              ))}
             </div>
           </div>
 
-          {/* Evaluated Alternatives Cards */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-              Evaluated Candidate Alternatives (CR-001..CR-008 Safety Filtered)
-            </h3>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1rem' }}>
-              {decisionResponse.alternatives.map((alt) => {
-                const isSelected = selectedAlternativeId === alt.option_id;
-                const isRec = alt.is_recommended;
-
-                return (
-                  <div
-                    key={alt.option_id}
-                    onClick={() => setSelectedAlternativeId(alt.option_id)}
-                    style={{
-                      backgroundColor: 'var(--bg-card)',
-                      border: `2px solid ${isSelected ? 'var(--accent-primary)' : isRec ? 'var(--accent-success)' : 'var(--border-color)'}`,
-                      borderRadius: '10px',
-                      padding: '1.25rem',
-                      cursor: 'pointer',
-                      boxShadow: isSelected ? 'var(--shadow-md)' : 'var(--shadow-sm)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '0.75rem',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--accent-primary)' }}>
+          {/* Comparison Matrix Table */}
+          <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden', boxShadow: 'var(--shadow-xs)' }}>
+            <div style={{ padding: '0.85rem 1.25rem', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-subtle)' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>Evaluated Alternatives — CR-001..CR-008 Safety Filtered</span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: '0.5rem' }}>Click a row to select; approve the recommended option</span>
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+              <table className="ops-table">
+                <thead>
+                  <tr>
+                    <th>Option ID</th>
+                    <th>Strategy</th>
+                    <th>Passenger Delay</th>
+                    <th>Tasks Preserved</th>
+                    <th>Safety Constraints</th>
+                    <th>Feasibility</th>
+                    <th>Status</th>
+                    <th style={{ textAlign: 'right' }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {decisionResponse.alternatives.map((alt) => {
+                    const isSelected = selectedAlternativeId === alt.option_id;
+                    const isRec = alt.is_recommended;
+                    return (
+                      <tr key={alt.option_id}
+                        style={{ cursor: 'pointer', backgroundColor: isRec ? 'rgba(22,163,74,0.04)' : isSelected ? 'var(--accent-primary-light)' : undefined }}
+                        onClick={() => setSelectedAlternativeId(alt.option_id)}>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: '0.78rem', color: 'var(--accent-primary)' }}>
                           {alt.option_id}
-                        </span>
-                        {isRec && (
-                          <span style={{
-                            padding: '0.15rem 0.5rem',
-                            borderRadius: '4px',
-                            fontSize: '0.65rem',
-                            fontWeight: 700,
-                            backgroundColor: 'rgba(22, 163, 74, 0.1)',
-                            color: 'var(--accent-success)',
-                          }}>
-                            RECOMMENDED
+                        </td>
+                        <td>
+                          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1px' }}>{alt.title}</div>
+                          <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{alt.description}</div>
+                        </td>
+                        <td style={{ fontWeight: 800, fontSize: '0.88rem', color: alt.passenger_train_delay_mins <= 25 ? 'var(--accent-success)' : alt.passenger_train_delay_mins <= 50 ? 'var(--accent-warning)' : 'var(--accent-danger)' }}>
+                          {alt.passenger_train_delay_mins}m
+                        </td>
+                        <td style={{ fontWeight: 700, color: alt.tasks_preserved_percentage >= 90 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
+                          {alt.tasks_preserved_percentage.toFixed(0)}%
+                        </td>
+                        <td>
+                          <span className={alt.is_feasible ? 'badge badge-green' : 'badge badge-red'}>
+                            {alt.is_feasible ? `✓ 0 violations` : `✗ ${alt.hard_violations_count} violations`}
                           </span>
-                        )}
-                      </div>
-
-                      <span style={{
-                        padding: '0.15rem 0.5rem',
-                        borderRadius: '4px',
-                        fontSize: '0.65rem',
-                        fontWeight: 700,
-                        backgroundColor: alt.is_feasible ? 'rgba(22, 163, 74, 0.1)' : 'rgba(220, 38, 38, 0.1)',
-                        color: alt.is_feasible ? 'var(--accent-success)' : 'var(--accent-danger)',
-                      }}>
-                        {alt.is_feasible ? 'FEASIBLE (0 VIOLATIONS)' : `INFEASIBLE (${alt.hard_violations_count} VIOLATIONS)`}
-                      </span>
-                    </div>
-
-                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      {alt.title}
-                    </div>
-
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {alt.description}
-                    </p>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                      <div>Passenger Delay: <strong style={{ color: 'var(--text-primary)' }}>{alt.passenger_train_delay_mins}m</strong></div>
-                      <div>Tasks Preserved: <strong style={{ color: 'var(--accent-success)' }}>{alt.tasks_preserved_percentage.toFixed(0)}%</strong></div>
-                    </div>
-
-                    {isRec && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleApproveAndApply(alt);
-                        }}
-                        style={{
-                          marginTop: '0.5rem',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '0.4rem',
-                          padding: '0.55rem',
-                          borderRadius: '6px',
-                          fontSize: '0.8rem',
-                          fontWeight: 700,
-                          backgroundColor: 'var(--accent-success)',
-                          color: '#ffffff',
-                          border: 'none',
-                          boxShadow: 'var(--shadow-sm)',
-                        }}
-                      >
-                        <Check size={14} />
-                        <span>Approve & Apply Replan to Master Plan</span>
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+                        </td>
+                        <td>
+                          <span className={alt.is_feasible ? 'badge badge-green' : 'badge badge-red'}>
+                            {alt.is_feasible ? 'FEASIBLE' : 'REJECTED'}
+                          </span>
+                        </td>
+                        <td>
+                          {isRec
+                            ? <span className="badge badge-green">★ RECOMMENDED</span>
+                            : isSelected
+                            ? <span className="badge badge-blue">SELECTED</span>
+                            : <span className="badge badge-gray">ALTERNATIVE</span>
+                          }
+                        </td>
+                        <td style={{ textAlign: 'right' }}>
+                          {isRec && (
+                            <button
+                              className="btn btn-success"
+                              style={{ padding: '0.3rem 0.7rem', fontSize: '0.72rem' }}
+                              onClick={(e) => { e.stopPropagation(); handleApproveAndApply(alt); }}>
+                              <Check size={12} /> Approve & Apply
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
 

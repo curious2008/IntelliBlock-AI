@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Play, RotateCcw, AlertTriangle, Layers, Activity, Check, CheckCircle2, Clock, Hash } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Play, RotateCcw, AlertTriangle, Layers, Activity, Check, CheckCircle2, Clock, Hash, ChevronDown } from 'lucide-react';
 import { useScenario } from '../../context/ScenarioContext';
 
 export const ScenarioSelector: React.FC = () => {
@@ -17,15 +17,28 @@ export const ScenarioSelector: React.FC = () => {
   const [selectedType, setSelectedType] = useState<string>(activeScenario?.scenario_type || 'NORMAL');
   const [seed, setSeed] = useState<number>(activeScenario?.seed || 42);
   const [successBanner, setSuccessBanner] = useState<string | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const selectedScenario = scenariosList.find(s => s.scenario_type === selectedType);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleGenerate = async () => {
     try {
       clearError();
       setSuccessBanner(null);
+      setDropdownOpen(false);
       const summary = await generateScenario(selectedType, seed);
-      setSuccessBanner(
-        `Generated scenario "${summary.scenario_name}" with Seed ${summary.seed} (Run ID: ${summary.run_id}). All downstream modules synchronized.`
-      );
+      setSuccessBanner(`"${summary.scenario_name}" (Seed ${summary.seed}) generated — ${summary.maintenance_task_count} tasks, ${summary.train_movement_count} trains, ${summary.block_opportunity_count} block windows.`);
     } catch (err) {
       console.error(err);
     }
@@ -35,106 +48,174 @@ export const ScenarioSelector: React.FC = () => {
     <div style={{
       backgroundColor: 'var(--bg-card)',
       border: '1px solid var(--border-color)',
-      borderRadius: '12px',
-      padding: '1.5rem',
+      borderRadius: '8px',
+      padding: '1rem 1.25rem',
       display: 'flex',
       flexDirection: 'column',
-      gap: '1.25rem',
+      gap: '0.85rem',
+      boxShadow: 'var(--shadow-xs)',
     }}>
-      {/* Title & Controller Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Layers size={20} style={{ color: 'var(--accent-primary)' }} />
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f8fafc' }}>
-              Synthetic Railway Environment & Scenario Engine
-            </h2>
-          </div>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
-            State-driven deterministic environment generator for SIH26027 multi-department block planning
-          </p>
+      {/* Control Row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+        {/* Label */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: '120px' }}>
+          <Layers size={15} color="var(--accent-primary)" />
+          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+            Scenario Environment
+          </span>
         </div>
 
-        {/* Seed Input & Generate Action */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            backgroundColor: 'var(--bg-dark)',
-            border: '1px solid var(--border-color)',
-            padding: '0.35rem 0.75rem',
-            borderRadius: '6px'
-          }}>
-            <Hash size={14} style={{ color: 'var(--text-muted)' }} />
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>Seed:</span>
-            <input
-              type="number"
-              value={seed}
-              onChange={(e) => setSeed(Number(e.target.value))}
-              style={{
-                width: '60px',
-                background: 'none',
-                border: 'none',
-                color: '#f8fafc',
-                fontFamily: 'var(--font-mono)',
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                outline: 'none',
-              }}
-              title="Change seed to generate unique deterministic scenario variants"
-            />
-          </div>
-
+        {/* Scenario Dropdown */}
+        <div ref={dropdownRef} style={{ position: 'relative', flex: 1, minWidth: '220px', maxWidth: '360px' }}>
           <button
-            onClick={handleGenerate}
-            disabled={generating}
+            onClick={() => setDropdownOpen(!dropdownOpen)}
             style={{
+              width: '100%',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'space-between',
               gap: '0.5rem',
-              padding: '0.5rem 1.1rem',
+              padding: '0.45rem 0.75rem',
               borderRadius: '6px',
-              backgroundColor: 'var(--accent-primary)',
-              color: '#0f172a',
-              fontWeight: 700,
-              fontSize: '0.85rem',
-              opacity: generating ? 0.7 : 1,
-              boxShadow: '0 0 12px rgba(56, 189, 248, 0.3)',
+              border: '1px solid var(--border-color)',
+              backgroundColor: 'var(--bg-subtle)',
+              color: 'var(--text-primary)',
+              fontSize: '0.83rem',
+              fontWeight: 600,
+              cursor: 'pointer',
             }}
           >
-            {generating ? (
-              <RotateCcw size={16} className="animate-spin" />
-            ) : (
-              <Play size={16} />
-            )}
-            <span>{generating ? 'Generating Scenario...' : 'Generate Scenario'}</span>
+            <span>{selectedScenario?.name || selectedType}</span>
+            <ChevronDown size={14} color="var(--text-muted)" style={{ flexShrink: 0 }} />
           </button>
+
+          {/* Dropdown Panel */}
+          {dropdownOpen && (
+            <div style={{
+              position: 'absolute',
+              top: 'calc(100% + 4px)',
+              left: 0,
+              width: '280px',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '8px',
+              boxShadow: 'var(--shadow-lg)',
+              zIndex: 500,
+              padding: '0.35rem',
+              animation: 'fadeIn 0.1s ease-out',
+            }}>
+              {scenariosList.map((sc) => {
+                const isSelected = selectedType === sc.scenario_type;
+                return (
+                  <button
+                    key={sc.scenario_type}
+                    onClick={() => { setSelectedType(sc.scenario_type); setDropdownOpen(false); }}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.6rem',
+                      padding: '0.5rem 0.65rem',
+                      borderRadius: '5px',
+                      border: 'none',
+                      backgroundColor: isSelected ? 'var(--accent-primary-light)' : 'transparent',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                    }}
+                    onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = 'var(--bg-subtle)'; }}
+                    onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent'; }}
+                  >
+                    <span style={{
+                      width: '16px', height: '16px',
+                      borderRadius: '50%',
+                      border: `2px solid ${isSelected ? 'var(--accent-primary)' : 'var(--border-strong)'}`,
+                      backgroundColor: isSelected ? 'var(--accent-primary)' : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0,
+                    }}>
+                      {isSelected && <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#ffffff' }} />}
+                    </span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: isSelected ? 'var(--accent-primary-text)' : 'var(--text-primary)' }}>
+                        {sc.name}
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {sc.description.length > 60 ? `${sc.description.slice(0, 60)}…` : sc.description}
+                      </div>
+                    </div>
+                    {isSelected && <Check size={13} color="var(--accent-primary)" style={{ flexShrink: 0 }} />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
+
+        {/* Seed */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '0.4rem',
+          padding: '0.45rem 0.7rem',
+          border: '1px solid var(--border-color)',
+          borderRadius: '6px',
+          backgroundColor: 'var(--bg-subtle)',
+        }}>
+          <Hash size={13} color="var(--text-muted)" />
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>Seed</span>
+          <input
+            type="number"
+            value={seed}
+            onChange={(e) => setSeed(Number(e.target.value))}
+            style={{
+              width: '55px',
+              background: 'none', border: 'none',
+              color: 'var(--text-primary)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.83rem', fontWeight: 700,
+              outline: 'none',
+            }}
+          />
+        </div>
+
+        {/* Generate */}
+        <button
+          onClick={handleGenerate}
+          disabled={generating}
+          className="btn btn-primary"
+        >
+          {generating
+            ? <RotateCcw size={14} className="animate-spin" />
+            : <Play size={14} />
+          }
+          <span>{generating ? 'Generating…' : 'Generate Scenario'}</span>
+        </button>
       </div>
 
-      {/* Generation Stage Progress Indicator */}
+      {/* Generation Progress */}
       {generating && (
         <div style={{
-          backgroundColor: 'var(--bg-dark)',
-          border: '1px solid rgba(56, 189, 248, 0.3)',
-          borderRadius: '8px',
-          padding: '1rem',
+          backgroundColor: 'var(--bg-subtle)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '6px',
+          padding: '0.75rem 1rem',
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.5rem',
+          gap: '0.35rem',
         }}>
-          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '0.25rem' }}>
-            Scenario Synthesis in Progress (Deterministic Seed: {seed}):
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '0.15rem' }}>
+            Synthesizing scenario (Seed: {seed})…
           </div>
           {generationStages.map((stage) => (
-            <div key={stage.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem' }}>
-              {stage.status === 'completed' && <CheckCircle2 size={14} style={{ color: 'var(--accent-success)' }} />}
-              {stage.status === 'running' && <RotateCcw size={14} className="animate-spin" style={{ color: 'var(--accent-primary)' }} />}
-              {stage.status === 'pending' && <Clock size={14} style={{ color: 'var(--text-muted)' }} />}
-              {stage.status === 'failed' && <AlertTriangle size={14} style={{ color: 'var(--accent-danger)' }} />}
+            <div key={stage.id} style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.73rem' }}>
+              {stage.status === 'completed' && <CheckCircle2 size={13} color="var(--accent-success)" />}
+              {stage.status === 'running'   && <RotateCcw size={13} className="animate-spin" color="var(--accent-primary)" />}
+              {stage.status === 'pending'   && <Clock size={13} color="var(--text-faint)" />}
+              {stage.status === 'failed'    && <AlertTriangle size={13} color="var(--accent-danger)" />}
               <span style={{
-                color: stage.status === 'running' ? 'var(--accent-primary)' : stage.status === 'completed' ? '#f8fafc' : 'var(--text-muted)',
+                color: stage.status === 'completed'
+                  ? 'var(--text-secondary)'
+                  : stage.status === 'running'
+                  ? 'var(--accent-primary)'
+                  : 'var(--text-muted)',
                 fontWeight: stage.status === 'running' ? 600 : 400,
               }}>
                 {stage.label}
@@ -144,160 +225,78 @@ export const ScenarioSelector: React.FC = () => {
         </div>
       )}
 
-      {/* Notifications */}
+      {/* Error */}
       {error && (
         <div style={{
-          padding: '0.75rem 1rem',
-          backgroundColor: 'rgba(239, 68, 68, 0.15)',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          color: 'var(--accent-danger)',
+          padding: '0.6rem 0.85rem',
+          backgroundColor: 'var(--accent-danger-subtle)',
+          border: '1px solid rgba(220,38,38,0.2)',
+          color: 'var(--accent-danger-text)',
           borderRadius: '6px',
-          fontSize: '0.8rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
+          fontSize: '0.78rem',
+          display: 'flex', alignItems: 'center', gap: '0.5rem',
         }}>
-          <AlertTriangle size={16} /> {error}
+          <AlertTriangle size={14} /> {error}
         </div>
       )}
 
-      {successBanner && (
+      {/* Success */}
+      {successBanner && !generating && (
         <div style={{
-          padding: '0.75rem 1rem',
-          backgroundColor: 'rgba(34, 197, 94, 0.15)',
-          border: '1px solid rgba(34, 197, 94, 0.3)',
-          color: 'var(--accent-success)',
+          padding: '0.6rem 0.85rem',
+          backgroundColor: 'var(--accent-success-subtle)',
+          border: '1px solid rgba(22,163,74,0.2)',
+          color: 'var(--accent-success-text)',
           borderRadius: '6px',
-          fontSize: '0.8rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
+          fontSize: '0.78rem',
+          display: 'flex', alignItems: 'center', gap: '0.5rem',
         }}>
-          <Check size={16} /> {successBanner}
+          <Check size={14} /> {successBanner}
         </div>
       )}
 
-      {/* 8 Benchmark Scenario Selection Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '0.75rem' }}>
-        {scenariosList.map((sc) => {
-          const isSelected = selectedType === sc.scenario_type;
-          return (
-            <div
-              key={sc.scenario_type}
-              onClick={() => setSelectedType(sc.scenario_type)}
-              style={{
-                backgroundColor: isSelected ? 'rgba(56, 189, 248, 0.12)' : 'var(--bg-dark)',
-                border: `1px solid ${isSelected ? 'var(--accent-primary)' : 'var(--border-color)'}`,
-                borderRadius: '8px',
-                padding: '0.85rem',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: isSelected ? 'var(--accent-primary)' : 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                  {sc.scenario_type}
-                </span>
-                {isSelected && <Check size={14} style={{ color: 'var(--accent-primary)' }} />}
-              </div>
-              <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#f8fafc', marginBottom: '0.35rem' }}>
-                {sc.name}
-              </div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', lineHeight: '1.3' }}>
-                {sc.description.length > 75 ? `${sc.description.substring(0, 75)}...` : sc.description}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Active Scenario Summary Card */}
+      {/* Active Scenario Metrics Strip */}
       {activeScenario && (
         <div style={{
-          backgroundColor: 'var(--bg-dark)',
-          border: '1px solid var(--border-color)',
-          borderRadius: '8px',
-          padding: '1.25rem',
           display: 'flex',
-          flexDirection: 'column',
-          gap: '0.85rem',
+          alignItems: 'center',
+          gap: '0', flexWrap: 'wrap',
+          borderTop: '1px solid var(--border-subtle)',
+          paddingTop: '0.75rem',
+          marginTop: '0.1rem',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Activity size={16} style={{ color: 'var(--accent-success)' }} />
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f8fafc' }}>
-                Active Environment: {activeScenario.scenario_name} (Deterministic Seed: {activeScenario.seed})
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginRight: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            <Activity size={12} color="var(--accent-success)" />
+            <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>Active:</span>
+            <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{activeScenario.scenario_name}</span>
+            <span style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>#{activeScenario.seed}</span>
+          </span>
+
+          {[
+            { label: 'Sections', value: activeScenario.track_section_count, color: 'var(--text-primary)' },
+            { label: 'Tasks', value: activeScenario.maintenance_task_count, color: 'var(--accent-warning-text)' },
+            { label: 'Trains', value: activeScenario.train_movement_count, color: 'var(--accent-primary)' },
+            { label: 'Opportunities', value: activeScenario.block_opportunity_count, color: 'var(--accent-success-text)' },
+            { label: 'Overdue/Emergency', value: `${activeScenario.overdue_task_count}/${activeScenario.emergency_task_count}`, color: 'var(--accent-danger-text)' },
+            { label: 'Co-location Clusters', value: activeScenario.overlapping_request_count, color: 'var(--accent-primary)' },
+          ].map((m, i) => (
+            <React.Fragment key={m.label}>
+              {i > 0 && <span style={{ height: '14px', width: '1px', backgroundColor: 'var(--border-color)', margin: '0 0.65rem' }} />}
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                {m.label}:
+                <span style={{ fontWeight: 700, color: m.color }}>{m.value}</span>
               </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              {lastGeneratedAt && (
-                <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)' }}>
-                  Updated: {lastGeneratedAt.toLocaleTimeString()}
-                </span>
-              )}
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                Run ID: {activeScenario.run_id}
+            </React.Fragment>
+          ))}
+
+          {lastGeneratedAt && (
+            <>
+              <span style={{ height: '14px', width: '1px', backgroundColor: 'var(--border-color)', margin: '0 0.65rem' }} />
+              <span style={{ fontSize: '0.68rem', color: 'var(--text-faint)' }}>
+                Updated {lastGeneratedAt.toLocaleTimeString()}
               </span>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem', textAlign: 'center' }}>
-            <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Corridors / Sections</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f8fafc' }}>
-                {activeScenario.corridor_count} / {activeScenario.track_section_count}
-              </div>
-            </div>
-
-            <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Track Assets</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
-                {activeScenario.asset_count}
-              </div>
-            </div>
-
-            <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Work Orders (Tasks)</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-warning)' }}>
-                {activeScenario.maintenance_task_count}
-              </div>
-            </div>
-
-            <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Monitored Trains</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-success)' }}>
-                {activeScenario.train_movement_count}
-              </div>
-            </div>
-
-            <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Freight Forecasts</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#c084fc' }}>
-                {activeScenario.freight_forecast_count}
-              </div>
-            </div>
-
-            <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Candidate Opportunities</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
-                {activeScenario.block_opportunity_count}
-              </div>
-            </div>
-
-            <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Overdue / Emergency</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-danger)' }}>
-                {activeScenario.overdue_task_count} / {activeScenario.emergency_task_count}
-              </div>
-            </div>
-
-            <div style={{ backgroundColor: 'var(--bg-card)', padding: '0.65rem', borderRadius: '6px', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Co-location Clusters</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--accent-warning)' }}>
-                {activeScenario.overlapping_request_count}
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
       )}
     </div>

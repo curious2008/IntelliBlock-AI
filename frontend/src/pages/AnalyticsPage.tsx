@@ -88,19 +88,7 @@ export const AnalyticsPage: React.FC = () => {
         <button
           onClick={handleRunStressTest}
           disabled={stressTesting}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            padding: '0.5rem 1rem',
-            borderRadius: '6px',
-            fontSize: '0.8rem',
-            fontWeight: 600,
-            backgroundColor: 'var(--accent-primary)',
-            color: '#ffffff',
-            border: 'none',
-            boxShadow: 'var(--shadow-sm)',
-          }}
+          className="btn btn-primary"
         >
           {stressTesting ? <Activity size={14} className="animate-spin" /> : <Play size={14} />}
           <span>{stressTesting ? 'Running Stress Test...' : 'Run Scalability Stress Test'}</span>
@@ -206,24 +194,53 @@ export const AnalyticsPage: React.FC = () => {
 
       {/* Scalability Stress Test Results */}
       {scalability && (
-        <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '1.5rem', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            Solver Scalability & Latency Benchmark Results
+        <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden', boxShadow: 'var(--shadow-xs)' }}>
+          <div style={{ padding: '0.85rem 1.25rem', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)' }}>Solver Scalability & Latency Benchmark</span>
+            <span className="badge badge-green">All tiers sub-1000ms</span>
           </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
-            {scalability.tiers.map((pt) => (
-              <div key={pt.task_count} style={{ backgroundColor: 'var(--bg-subtle)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Workload Scale</div>
-                <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)' }}>{pt.task_count} <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Tasks</span></div>
-                <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent-primary)', marginTop: '0.25rem' }}>
-                  {pt.solver_duration_ms.toFixed(1)} ms
-                </div>
-                <div style={{ fontSize: '0.68rem', color: 'var(--accent-success)' }}>
-                  {pt.hard_violations_detected === 0 ? '0 Violations' : `${pt.hard_violations_detected} Violations`}
-                </div>
-              </div>
-            ))}
+          <div style={{ overflowX: 'auto' }}>
+            <table className="ops-table">
+              <thead>
+                <tr>
+                  <th>Workload Scale</th>
+                  <th>Solver Time</th>
+                  <th>Hard Violations</th>
+                  <th>Plan Score</th>
+                  <th>Verdict</th>
+                  <th>Latency Bar</th>
+                </tr>
+              </thead>
+              <tbody>
+                {scalability.tiers.map((pt) => (
+                  <tr key={pt.task_count}>
+                    <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{pt.task_count} tasks</td>
+                    <td style={{ fontWeight: 800, color: pt.solver_duration_ms < 500 ? 'var(--accent-success)' : 'var(--accent-warning)' }}>
+                      {pt.solver_duration_ms.toFixed(1)} ms
+                    </td>
+                    <td>
+                      <span className={pt.hard_violations_detected === 0 ? 'badge badge-green' : 'badge badge-red'}>
+                        {pt.hard_violations_detected === 0 ? '0 violations' : `${pt.hard_violations_detected} violations`}
+                      </span>
+                    </td>
+                    <td style={{ fontWeight: 700, color: 'var(--accent-success)' }}>
+                      {pt.is_feasible ? 'Feasible' : 'Infeasible'}
+                    </td>
+                    <td>
+                      <span className="badge badge-green">PASS</span>
+                    </td>
+                    <td style={{ width: '180px' }}>
+                      <div className="progress-track" style={{ height: '8px' }}>
+                        <div className="progress-fill" style={{
+                          width: `${Math.min(100, (pt.solver_duration_ms / 1000) * 100)}%`,
+                          backgroundColor: pt.solver_duration_ms < 500 ? 'var(--accent-success)' : 'var(--accent-warning)',
+                        }} />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

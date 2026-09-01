@@ -21,23 +21,38 @@ interface SidebarProps {
   onSelectPage: (page: PageId) => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onSelectPage }) => {
-  const menuItems: { id: PageId; label: string; icon: React.ReactNode; category: 'core' | 'schedule' | 'intel' }[] = [
-    { id: 'dashboard', label: 'Command Center', icon: <LayoutDashboard size={17} />, category: 'core' },
-    { id: 'planning', label: 'Adaptive Horizon', icon: <Calendar size={17} />, category: 'core' },
-    { id: 'plans', label: 'Master Block Plans', icon: <ShieldAlert size={17} />, category: 'schedule' },
-    { id: 'opportunities', label: 'Block Opportunities', icon: <Layers size={17} />, category: 'schedule' },
-    { id: 'maintenance', label: 'Maintenance Demands', icon: <Wrench size={17} />, category: 'schedule' },
-    { id: 'trains', label: 'Train Movements', icon: <Train size={17} />, category: 'schedule' },
-    { id: 'corridors', label: 'Corridors & Sections', icon: <MapPin size={17} />, category: 'schedule' },
-    { id: 'resources', label: 'Resource Fleet', icon: <Users size={17} />, category: 'schedule' },
-    { id: 'whatif', label: 'Risk & Decision Support', icon: <GitFork size={17} />, category: 'intel' },
-    { id: 'analytics', label: 'Analytics & Baseline', icon: <BarChart3 size={17} />, category: 'intel' },
-  ];
+const NAV_GROUPS = [
+  {
+    label: 'Operations',
+    items: [
+      { id: 'dashboard' as PageId, label: 'Command Center', icon: <LayoutDashboard size={16} /> },
+      { id: 'planning' as PageId,  label: 'Adaptive Horizon', icon: <Calendar size={16} /> },
+    ],
+  },
+  {
+    label: 'Network & Schedule',
+    items: [
+      { id: 'plans' as PageId,         label: 'Master Block Plans', icon: <ShieldAlert size={16} /> },
+      { id: 'opportunities' as PageId, label: 'Block Opportunities', icon: <Layers size={16} /> },
+      { id: 'maintenance' as PageId,   label: 'Maintenance Demands', icon: <Wrench size={16} /> },
+      { id: 'trains' as PageId,        label: 'Train Movements', icon: <Train size={16} /> },
+      { id: 'corridors' as PageId,     label: 'Corridors & Sections', icon: <MapPin size={16} /> },
+      { id: 'resources' as PageId,     label: 'Resource Fleet', icon: <Users size={16} /> },
+    ],
+  },
+  {
+    label: 'Intelligence',
+    items: [
+      { id: 'whatif' as PageId,    label: 'Risk & Decision Support', icon: <GitFork size={16} /> },
+      { id: 'analytics' as PageId, label: 'Analytics & Baseline', icon: <BarChart3 size={16} /> },
+    ],
+  },
+];
 
+export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onSelectPage }) => {
   return (
     <aside style={{
-      width: '250px',
+      width: '232px',
       backgroundColor: 'var(--bg-sidebar)',
       borderRight: '1px solid var(--border-color)',
       display: 'flex',
@@ -46,110 +61,103 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onSelectPage }) =
       flexShrink: 0,
       userSelect: 'none',
     }}>
-      {/* Brand Logo */}
+      {/* Brand */}
       <div style={{
-        padding: '1.25rem 1.5rem',
+        padding: '1rem 1.25rem',
         borderBottom: '1px solid var(--border-color)',
         display: 'flex',
         alignItems: 'center',
-        gap: '0.75rem',
+        gap: '0.65rem',
       }}>
         <div style={{
-          width: '34px',
-          height: '34px',
-          borderRadius: '8px',
+          width: '32px', height: '32px',
+          borderRadius: '7px',
           background: 'linear-gradient(135deg, #0284c7, #0369a1)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: '#ffffff',
-          fontWeight: 800,
-          fontSize: '1rem',
-          boxShadow: '0 2px 8px rgba(2, 132, 199, 0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#ffffff', fontWeight: 800, fontSize: '0.9rem',
+          flexShrink: 0,
         }}>
           IB
         </div>
         <div>
-          <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+          <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
             IntelliBlock AI
           </div>
-          <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+          <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             Decision Support OS
           </div>
         </div>
       </div>
 
-      {/* Navigation Links */}
-      <nav style={{ flex: 1, padding: '1rem 0.65rem', overflowY: 'auto' }}>
-        <div style={{
-          fontSize: '0.65rem',
-          fontWeight: 700,
-          color: 'var(--text-muted)',
-          textTransform: 'uppercase',
-          padding: '0.35rem 0.75rem',
-          letterSpacing: '0.08em',
-        }}>
-          Operations Menu
-        </div>
-        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.2rem', marginTop: '0.25rem' }}>
-          {menuItems.map((item) => {
-            const isActive = currentPage === item.id;
-            return (
-              <li key={item.id}>
-                <button
-                  onClick={() => onSelectPage(item.id)}
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    padding: '0.6rem 0.85rem',
-                    borderRadius: '7px',
-                    border: 'none',
-                    backgroundColor: isActive ? 'var(--accent-primary)' : 'transparent',
-                    color: isActive ? '#ffffff' : 'var(--text-secondary)',
-                    fontWeight: isActive ? 600 : 500,
-                    fontSize: '0.83rem',
-                    transition: 'all 0.15s ease',
-                    textAlign: 'left',
-                    boxShadow: isActive ? '0 2px 6px rgba(2, 132, 199, 0.25)' : 'none',
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
-                      e.currentTarget.style.color = 'var(--text-primary)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = 'var(--text-secondary)';
-                    }
-                  }}
-                >
-                  <span style={{ color: isActive ? '#ffffff' : 'var(--accent-primary)' }}>
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+      {/* Navigation */}
+      <nav style={{ flex: 1, padding: '0.75rem 0.65rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        {NAV_GROUPS.map((group) => (
+          <div key={group.label}>
+            <div style={{
+              fontSize: '0.62rem', fontWeight: 700, color: 'var(--text-faint)',
+              textTransform: 'uppercase', letterSpacing: '0.08em',
+              padding: '0 0.65rem', marginBottom: '0.3rem',
+            }}>
+              {group.label}
+            </div>
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+              {group.items.map((item) => {
+                const isActive = currentPage === item.id;
+                return (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => onSelectPage(item.id)}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.6rem',
+                        padding: '0.5rem 0.65rem',
+                        borderRadius: '6px',
+                        border: 'none',
+                        borderLeft: isActive ? '3px solid var(--sidebar-active-border)' : '3px solid transparent',
+                        backgroundColor: isActive ? 'var(--sidebar-active-bg)' : 'transparent',
+                        color: isActive ? 'var(--sidebar-active-text)' : 'var(--sidebar-inactive-text)',
+                        fontWeight: isActive ? 700 : 500,
+                        fontSize: '0.8rem',
+                        transition: 'all 0.12s ease',
+                        textAlign: 'left',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.backgroundColor = 'var(--bg-subtle)';
+                          e.currentTarget.style.color = 'var(--text-primary)';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActive) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.color = 'var(--sidebar-inactive-text)';
+                        }
+                      }}
+                    >
+                      <span style={{ opacity: isActive ? 1 : 0.7, flexShrink: 0 }}>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
       </nav>
 
-      {/* System Status Footer */}
+      {/* Footer */}
       <div style={{
-        padding: '0.85rem 1.25rem',
+        padding: '0.75rem 1.25rem',
         borderTop: '1px solid var(--border-color)',
-        fontSize: '0.7rem',
-        color: 'var(--text-muted)',
+        fontSize: '0.68rem',
+        color: 'var(--text-faint)',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center',
       }}>
         <span>SIH 2024 Finalist</span>
-        <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>v1.0.0</span>
+        <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>v1.0.0</span>
       </div>
     </aside>
   );
