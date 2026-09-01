@@ -14,8 +14,6 @@ services:
         sync: false
       - key: CORS_ORIGINS
         sync: false
-      - key: SECRET_KEY
-        generateValue: true
       - key: N8N_WF01_BLOCK_APPROVED_URL
         sync: false
       - key: N8N_WF02_DISRUPTION_EVENT_URL
