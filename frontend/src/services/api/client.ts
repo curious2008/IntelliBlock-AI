@@ -6,10 +6,10 @@ import {
 } from '../../types';
 
 const resolveApiUrl = () => {
-  const url = import.meta.env.VITE_API_BASE_URL;
-  if (url) return url;
-  if (import.meta.env.DEV) return 'http://localhost:8000/api/v1';
-  throw new Error('FATAL: VITE_API_BASE_URL environment variable is missing. Production build requires this variable to be set.');
+  let url = import.meta.env.VITE_API_BASE_URL;
+  if (!url && import.meta.env.DEV) url = 'http://localhost:8000/api/v1';
+  if (!url) throw new Error('FATAL: VITE_API_BASE_URL environment variable is missing. Production build requires this variable to be set.');
+  return url.replace(/\/+$/, ''); // Strip trailing slashes to prevent // endpoints
 };
 
 const API_BASE_URL = resolveApiUrl();
