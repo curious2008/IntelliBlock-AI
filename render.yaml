@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: intelliblock-backend
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && alembic upgrade head
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: BACKEND_HOST
+        value: 0.0.0.0
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: N8N_WF01_BLOCK_APPROVED_URL
+        sync: false
+      - key: N8N_WF02_DISRUPTION_EVENT_URL
+        sync: false
